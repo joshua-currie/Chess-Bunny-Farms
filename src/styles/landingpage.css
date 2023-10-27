@@ -1,0 +1,24 @@
+#chessboard
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+
+    border: solid;
+    height: 1000px;
+    width: 1000px;
+}
+
+.board-coordinate
+{
+    border: solid;
+}
+
+.light-square
+{
+    background-color: bisque;
+}
+
+.dark-square
+{
+    background-color: rgb(80, 31, 9);
+}

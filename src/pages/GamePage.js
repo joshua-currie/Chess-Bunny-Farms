@@ -1,4 +1,6 @@
 import React from "react";
+import {useState, useEffect} from 'react';
+import axios from 'axios';
 import '../styles/gamepage.css';
 
 import darkRookImage from "../assets/chesspieces/dark-rook.png";
@@ -17,16 +19,81 @@ import blankPlaceholder from "../assets/chesspieces/blankplaceholder.png";
 
 
 const GamePage = () => {
+    let potentialMoveComplete = false;
+    let potentialMoveCompleteVal1 = "";
+    const [fenPosition, setFenPosition] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'); // Set the initial FEN value here
+    const [potentialMove, setPotentialMove] = useState('');
+    const [moveResult, setMoveResult] = useState('');
+
+    const checkMove = () => {
+        axios
+        .post('http://localhost:5000/check-move', { fen_position: fenPosition, potential_move: potentialMove })
+        .then((response) => {
+            // console.log("TESTING:  " + response.data.valid)
+            if (response.data.valid == "true") {
+            setMoveResult('The move is valid.');
+            } else {
+            setMoveResult('The move is not valid.');
+            }
+        })
+        .catch((error) => {
+            console.error('An error occurred:', error);
+        });
+    };
+
+    const getBestMove = () => {
+        axios
+        .post('http://localhost:5000/get-best-move', {
+            fen_position: fenPosition,
+            stockfish_path: 'stockfish/stockfish-windows-x86-64-avx2.exe',
+            time_limit: 2.0,
+        })
+        .then((response) => {
+            setMoveResult('The best move is: ' + response.data.best_move);
+        })
+        .catch((error) => {
+            console.error('An error occurred:', error);
+        });
+    };
+
+    const getPotentialMove = (coord) => {
+        if (!potentialMoveComplete)
+        {
+            potentialMoveCompleteVal1 = coord;
+            potentialMoveComplete = true;
+        }
+
+        else if (potentialMoveComplete)
+        {
+            setPotentialMove(potentialMoveCompleteVal1 + coord);
+            potentialMoveComplete = false;
+            potentialMoveCompleteVal1 = "";
+        }
+    };
+
+    useEffect(() => {
+        console.log('Updated potentialMove:', potentialMove);
+        checkMove();
+    }, [potentialMove]);
+
+    useEffect(() => {
+        console.log("Move Result State:", moveResult);
+    }, [moveResult]);
+
     return ( 
         <div>
             <div>Game page</div>
 
             <div id="chessboard">
                 <div id="a8" className="board-coordinate dark-square">
-                    <img src={darkRookImage} />
+                    <button className="chess-square-button" onClick={() => getPotentialMove("a8")}>
+                        <img src={darkRookImage} />
+                    </button>
                 </div>
                 <div id="b8" className="board-coordinate light-square">
-                    <img src={darkKnightImage} />
+                    <button className="chess-square-button" onClick={() => getPotentialMove("b8")}>
+                        <img src={darkKnightImage} />
+                    </button>
                 </div>
                 <div id="c8" className="board-coordinate dark-square">
                     <img src={darkBishopImage} />
@@ -131,7 +198,9 @@ const GamePage = () => {
                     <img src={blankPlaceholder} />
                 </div>
                 <div id="e4" className="board-coordinate dark-square">
-                    <img src={blankPlaceholder} />
+                <button className="chess-square-button" onClick={() => getPotentialMove("e4")}>
+                        <img src={blankPlaceholder} />
+                    </button>
                 </div>
                 <div id="f4" className="board-coordinate light-square">
                     <img src={blankPlaceholder} />
@@ -179,7 +248,9 @@ const GamePage = () => {
                     <img src={lightPawnImage} />
                 </div>
                 <div id="e2" className="board-coordinate dark-square">
-                    <img src={lightPawnImage} />
+                <button className="chess-square-button" onClick={() => getPotentialMove("e2")}>
+                        <img src={lightPawnImage} />
+                    </button>
                 </div>
                 <div id="f2" className="board-coordinate light-square">
                     <img src={lightPawnImage} />
